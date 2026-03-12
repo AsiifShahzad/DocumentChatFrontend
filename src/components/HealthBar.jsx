@@ -124,17 +124,8 @@ function HealthBar({ apiUrl }) {
     )
   }
 
-  if (!health) return null
-
-  return (
-    <div className="bg-green-50 border-b border-green-200 px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between">
-      <div className="flex items-center gap-2 text-xs sm:text-sm text-green-800 font-medium">
-        <FiCheckCircle className="flex-shrink-0" />
-        <span className="hidden sm:inline">✓ Backend services healthy</span>
-        <span className="sm:hidden">✓ Connected</span>
-      </div>
-    </div>
-  )
+  // Only show health bar if there's an issue - don't show when everything is fine
+  return null
 }
 
 export default HealthBar
