@@ -16,32 +16,41 @@ npm run dev    # Runs on http://localhost:5173
 
 ## For Production Deployment
 
+### ⚠️ IMPORTANT: Set Environment Variable BEFORE Deploying
+
+**Without setting `VITE_API_URL`, your deployed app will fail!**
+
+Your app needs to know where your backend is. This is set via the `VITE_API_URL` environment variable.
+
 ### Step 1: Update Environment Variable
 
-Before deploying, you need to set the API URL to your **deployed backend**.
-
 **Option A: Vercel (Recommended)**
-1. Go to your Vercel project settings
-2. Navigate to **Environment Variables**
+1. Go to your Vercel project
+2. Click **Settings** → **Environment Variables**
 3. Add a new variable:
    - **Name:** `VITE_API_URL`
-   - **Value:** Your deployed backend URL (e.g., `https://your-backend.com`)
-4. Redeploy your site
+   - **Value:** Your backend URL (e.g., `https://asiifbaloch-documentchat.hf.space`)
+   - **Environments:** Select `Production`
+4. Click **Save**
+5. **Redeploy** your project (Settings → Deployments → Redeploy)
 
 **Option B: Netlify**
-1. Go to your Netlify site settings → **Build & deploy**
-2. Set **Build environment variables:**
+1. Go to your Netlify site
+2. Click **Site Settings** → **Build & deploy** → **Environment**
+3. Click **Edit variables** (or **Add environment variables**)
+4. Add:
    - **Key:** `VITE_API_URL`
-   - **Value:** Your deployed backend URL
-3. Trigger a new deploy
+   - **Value:** Your backend URL
+5. **Trigger a new deploy**
 
-**Option C: GitHub Pages**
-1. Add to your `.env.production` file (locally):
+**Option C: GitHub Pages (Static Hosting)**
+1. Create a `.env.production` file locally:
    ```
-   VITE_API_URL=https://your-backend.com
+   VITE_API_URL=https://your-backend-url
    ```
-2. Run build and commit: `npm run build`
-3. Push to GitHub - GitHub Pages will deploy
+2. Run: `npm run build`
+3. Commit and push to your repository
+4. GitHub Pages will redeploy with the correct API URL
 
 ### Step 2: Build for Production
 
@@ -53,33 +62,29 @@ npm run build    # Creates optimized files in 'dist' folder
 
 Your build output is in the `dist/` folder. Upload this to your hosting:
 
-- **Vercel:** Connect your GitHub repo → auto-deploys
-- **Netlify:** Drag & drop `dist/` folder or connect GitHub
+- **Vercel:** Automatically deploys from GitHub (after setting env vars)
+- **Netlify:** Drag & drop `dist/` folder or connect GitHub  
 - **GitHub Pages:** Push `dist/` to gh-pages branch
 - **Traditional Server:** Copy `dist/` to your web server's public directory
 
----
+### Step 4: Verify Deployment Works
 
-## Troubleshooting Deployment Issues
+After deploying, **before assuming it works**:
 
-### "Network error" or "Failed to load"
-- Verify `VITE_API_URL` is set correctly in your deployment
-- Check that your backend is running and accessible
-- Look at browser **DevTools → Network** tab to see actual API calls
+1. Open your deployed app in a browser
+2. Press **F12** → **Console**
+3. Look for the message: `[HealthBar] Checking health at: YOUR_BACKEND_URL/health`
+4. If you see `undefined` or `localhost`, the environment variable isn't set
 
-### CORS Errors
-Your backend needs to allow requests from your frontend domain. Configure CORS on the backend (HuggingFace Spaces or your server).
-
-### Build Succeeds but Site Won't Load
-- Check that `dist/index.html` exists
-- Verify all assets are loading (check DevTools → Console)
-- Clear browser cache and refresh
+**If you see the error "Backend service unavailable", see [DEBUG_DEPLOYMENT.md](DEBUG_DEPLOYMENT.md) for troubleshooting!**
 
 ---
 
-## Verify Your Setup
+## Troubleshooting
 
-After deployment, open your browser's **DevTools (F12)** and check:
-1. **Console tab** - Should show no errors
-2. **Network tab** - Check if `/ask` and `/upload` requests reach your backend
-3. Look for the API URL being used (should match your deployed backend)
+If you're experiencing issues after deployment (like "Backend service unavailable"), refer to [DEBUG_DEPLOYMENT.md](DEBUG_DEPLOYMENT.md) for:
+- How to check what API URL your deployed app is using
+- How to verify environment variables are set correctly
+- How to test your backend directly
+- Common issues and their solutions
+

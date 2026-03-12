@@ -15,6 +15,7 @@ function HealthBar({ apiUrl }) {
     const checkHealth = async () => {
       try {
         setIsChecking(true)
+        console.log('[HealthBar] Checking health at:', `${apiUrl}/health`)
 
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), HEALTH_TIMEOUT)
@@ -26,6 +27,7 @@ function HealthBar({ apiUrl }) {
         clearTimeout(timeoutId)
 
         if (!response.ok) {
+          console.error('[HealthBar] Health check failed with status:', response.status)
           if (isMounted) {
             setIsUnhealthy(true)
             setHealth(null)
@@ -57,6 +59,7 @@ function HealthBar({ apiUrl }) {
           setIsUnhealthy(hasIssues)
         }
       } catch (error) {
+        console.error('[HealthBar] Health check error:', error.message)
         if (isMounted) {
           setIsUnhealthy(true)
           setHealth(null)
