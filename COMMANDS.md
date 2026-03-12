@@ -70,24 +70,68 @@ Open http://localhost:5173 in your browser ✅
 
 ---
 
-## 📦 Build for Production
+## 📦 BUILD FOR PRODUCTION
 
-### Create Production Build
-```bash
+### Quick Build (Using Script)
+
+**Windows - Batch:**
+```powershell
+# Double-click: BUILD.bat
+# Or run:
+.\BUILD.bat
+```
+
+**Windows - PowerShell:**
+```powershell
+# First time only:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Then run:
+.\BUILD.ps1
+```
+
+### Manual Build
+```powershell
+# Create optimized build
+npm run build
+
+# Preview the build locally
+npm run preview
+```
+
+**Expected output:**
+```
+vite v5.1.0 building for production...
+✓ 1234 modules transformed.
+dist/index.html                  X.XX kB
+dist/assets/main.xxxxxxxx.js     XXX.XX kB
+dist/assets/style.xxxxxxxx.css   XX.XX kB
+```
+
+---
+
+## ❌ Build Failed?
+
+If you get: `Command "npm run build" exited with 1`
+
+**🔧 Quick Fix:**
+
+```powershell
+# Clear npm cache
+npm cache clean --force
+
+# Clear dependencies
+rmdir /s/q node_modules
+del package-lock.json
+
+# Reinstall
+npm install
+
+# Try build again
 npm run build
 ```
 
-**Output**:
-```
-dist/index.html                    (X.XX kB)
-dist/assets/main.xxxxxxxx.js       (XXX.XX kB)
-dist/assets/style.xxxxxxxx.css     (XX.XX kB)
-```
-
-### Preview Production Build Locally
-```bash
-npm run preview
-```
+**→ See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for more solutions**
 
 ---
 

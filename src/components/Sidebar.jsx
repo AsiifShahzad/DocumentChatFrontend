@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { FiUploadCloud, FiFile, FiFileText } from 'react-icons/fi'
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
 const UPLOAD_TIMEOUT = 120000 // 2 minutes for file upload
@@ -122,11 +123,11 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
     <aside className="w-80 bg-white border-r border-gray-200 flex flex-col">
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            <span className="text-xl">📄</span>
+          <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+            <FiFile className="text-xl text-blue-500" />
           </div>
           <div>
-            <h1 className="font-bold text-gray-900">AskMyDoc</h1>
+            <h1 className="font-bold text-gray-900">AskMyPDF</h1>
             <p className="text-xs text-gray-600">Analyze & query your PDFs</p>
           </div>
         </div>
@@ -139,13 +140,16 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
           onClick={() => fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition ${
             isDragActive
-              ? 'border-primary bg-blue-50'
+              ? 'border-blue-400 bg-blue-50'
               : 'border-gray-300 hover:border-gray-400'
           }`}
         >
-          <div className="text-3xl mb-2">📁</div>
-          <p className="font-medium text-gray-900">Click or drag PDF here</p>
-          <p className="text-xs text-gray-600 mt-1">Maximum file size 50MB</p>
+          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center justify-center gap-2">
+            <FiUploadCloud className="text-lg text-blue-500" /> Upload Document
+          </h3>
+          <FiUploadCloud className="text-4xl text-blue-400 mb-3 mx-auto" />
+          <p className="font-medium text-gray-900 text-sm">Click or drag PDF here</p>
+          <p className="text-xs text-gray-500 mt-2">Maximum file size 50MB</p>
         </div>
 
         <input
@@ -175,25 +179,31 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
       </div>
 
       <div className="p-6 flex-1">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Current Document</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-6">Current Document</h2>
         
         {document ? (
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border-2 border-blue-300 animate-slide-in">
             <div className="flex items-start gap-3">
-              <span className="text-2xl">📄</span>
+              <div className="text-3xl text-blue-500 animate-bounce-icon">
+                <FiFileText />
+              </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate">{document.filename}</p>
-                <p className="text-xs text-gray-600 mt-1">
-                  {document.chunks_processed} chunks processed
+                <p className="font-semibold text-blue-900 truncate">{document.filename}</p>
+                <p className="text-xs text-blue-700 mt-2 font-medium">
+                  ✓ {document.chunks_processed} chunks processed
                 </p>
               </div>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="text-4xl mb-3 opacity-20">📋</div>
-            <p className="text-sm text-gray-600">No document loaded</p>
-            <p className="text-xs text-gray-500 mt-1">Upload a PDF to start chatting</p>
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border-2 border-dashed border-gray-300">
+            <div className="flex flex-col items-center justify-center text-center">
+              <div className="text-5xl text-gray-300 mb-3">
+                <FiFile />
+              </div>
+              <p className="text-sm font-medium text-gray-600">No document active</p>
+              <p className="text-xs text-gray-500 mt-1">Upload a PDF to start chatting</p>
+            </div>
           </div>
         )}
       </div>

@@ -148,29 +148,26 @@ npm run preview
 
 ## Troubleshooting
 
-### Backend Not Reachable
-```
-❌ Error: "Network error. Check your connection and backend URL."
-✅ Check: Is https://asiifbaloch-documentchat.hf.space online?
-✅ Check: Is your internet connection working?
-✅ Check: Are you behind a firewall/VPN that blocks external APIs?
-```
+### Build Failed: "npm run build" exited with 1
 
-### Upload Fails
-```
-❌ Error: "File is too large. Maximum size is 50MB"
-✅ Check: Is your PDF under 50MB?
-❌ Error: "Upload timed out after 120s"
-✅ Try: Reduce file size or split into smaller PDFs
-```
+**Quick Fix:**
 
-### Chat Returns Empty
-```
-❌ Error: No answer from backend
-✅ Check: Is the PDF properly uploaded?
-✅ Check: Are you asking relevant questions?
-✅ Try: Rephrase the question
-```
+1. **Use the Build Script** (easiest):
+   ```bash
+   .\BUILD.bat        # Windows Batch
+   .\BUILD.ps1        # Windows PowerShell
+   ```
+
+2. **Manual Fix:**
+   ```bash
+   npm cache clean --force
+   rmdir /s/q node_modules
+   del package-lock.json
+   npm install
+   npm run build
+   ```
+
+**→ Full troubleshooting guide:** See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
 
 ## Development
 

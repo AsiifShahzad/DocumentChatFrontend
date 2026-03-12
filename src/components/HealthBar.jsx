@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { FiCheckCircle, FiAlertCircle, FiActivity } from 'react-icons/fi'
 
 const HEALTH_CHECK_INTERVAL = 30000 // 30 seconds
 const HEALTH_TIMEOUT = 10000 // 10 seconds per health check
@@ -106,40 +107,50 @@ function HealthBar({ apiUrl }) {
     <div className={`${
       isUnhealthy 
         ? 'bg-red-50 border-b border-red-200' 
-        : 'bg-gray-50 border-b border-gray-200'
+        : 'bg-blue-50 border-b border-blue-200'
     } px-6 py-3 transition-colors`}>
       {isChecking && !health ? (
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex items-center gap-2 text-sm text-blue-600">
+          <FiActivity className="w-4 h-4 animate-spin" />
           Checking backend services...
         </div>
       ) : isUnhealthy ? (
-        <p className="text-sm text-red-700 font-medium">
-          ⚠️ Backend service unavailable - Some services are degraded or offline
+        <p className="text-sm text-red-700 font-medium flex items-center gap-2">
+          <FiAlertCircle className="w-4 h-4" /> Backend service unavailable - Some services are degraded or offline
         </p>
       ) : health ? (
         <div className="flex items-center gap-6 text-sm">
-          <span className="font-medium text-gray-700">Services:</span>
+          <span className="font-medium text-gray-700 flex items-center gap-2">
+            <FiActivity className="w-4 h-4 text-blue-500" /> Services:
+          </span>
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${getStatusColor(health.embedding_model)}`} title={getStatusLabel(health.embedding_model)}></div>
+              <div className={`w-4 h-4 ${getStatusColor(health.embedding_model)} rounded-full flex items-center justify-center text-white`} title={getStatusLabel(health.embedding_model)}>
+                {health.embedding_model === 'ok' || health.embedding_model === 'healthy' ? '✓' : '!'}
+              </div>
               <span className="text-gray-600">Embedding</span>
               <span className="text-xs text-gray-500">({getStatusLabel(health.embedding_model)})</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${getStatusColor(health.pinecone)}`} title={getStatusLabel(health.pinecone)}></div>
+              <div className={`w-4 h-4 ${getStatusColor(health.pinecone)} rounded-full flex items-center justify-center text-white text-xs`} title={getStatusLabel(health.pinecone)}>
+                {health.pinecone === 'ok' || health.pinecone === 'healthy' ? '✓' : '!'}
+              </div>
               <span className="text-gray-600">Pinecone</span>
               <span className="text-xs text-gray-500">({getStatusLabel(health.pinecone)})</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${getStatusColor(health.reranker)}`} title={getStatusLabel(health.reranker)}></div>
+              <div className={`w-4 h-4 ${getStatusColor(health.reranker)} rounded-full flex items-center justify-center text-white text-xs`} title={getStatusLabel(health.reranker)}>
+                {health.reranker === 'ok' || health.reranker === 'healthy' ? '✓' : '!'}
+              </div>
               <span className="text-gray-600">Reranker</span>
               <span className="text-xs text-gray-500">({getStatusLabel(health.reranker)})</span>
             </div>
           </div>
         </div>
       ) : (
-        <p className="text-sm text-gray-600">Unable to reach backend services</p>
+        <p className="text-sm text-gray-600 flex items-center gap-2">
+          <FiAlertCircle className="w-4 h-4" /> Unable to reach backend services
+        </p>
       )}
     </div>
   )

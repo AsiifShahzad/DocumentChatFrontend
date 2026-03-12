@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
+import { FiSend, FiUploadCloud, FiShoppingCart } from 'react-icons/fi'
 
 function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
   const [input, setInput] = useState('')
@@ -44,12 +45,19 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center">
-            <div className="text-6xl mb-4">🤖</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to AskMyDoc</h2>
-            <p className="text-gray-600 max-w-md">
-              {hasDocument
-                ? 'Your document is ready. Ask questions about it below.'
-                : 'Upload a PDF document in the sidebar to get started.'}
+            <div className="mb-6 relative">
+              <div className="absolute inset-0 bg-blue-400 rounded-full opacity-20 animate-pulse-ring"></div>
+              <div className="relative text-7xl text-blue-500 animate-bounce-icon">
+                <FiShoppingCart />
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">Welcome to AskMyPDF</h2>
+            <p className="text-gray-600 max-w-md leading-relaxed">
+              Start by uploading a PDF document in the sidebar.
+              <br />
+              Once processed, our AI will help you extract
+              <br />
+              insights, summarize, and answer questions.
             </p>
           </div>
         ) : (
@@ -120,10 +128,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
       {/* Input Area */}
       <div className="border-t border-gray-200 bg-white p-4">
         <div className="flex flex-col gap-2">
-          {!hasDocument && (
-            <p className="text-xs text-orange-600 px-2">📤 Upload a PDF in the sidebar to start chatting</p>
-          )}
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-end">
             <input
               ref={inputRef}
               type="text"
@@ -133,36 +138,27 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
               disabled={!hasDocument || isLoading}
               placeholder={
                 hasDocument
-                  ? 'Ask a question about your document... (Shift+Enter for new line)'
-                  : 'Upload a PDF to start asking questions'
+                  ? 'Ask your question here...'
+                  : 'Upload a PDF document first to ask questions...'
               }
               maxLength={5000}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 text-sm"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 text-sm"
             />
             <button
               onClick={handleSend}
               disabled={!hasDocument || !input.trim() || isLoading}
-              title={
-                !hasDocument
-                  ? 'Upload a PDF first'
-                  : !input.trim()
-                  ? 'Type a question'
-                  : isLoading
-                  ? 'Waiting for response...'
-                  : 'Send message'
-              }
-              className="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 min-w-14"
+              className="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center justify-center h-10 w-10"
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <span>Send</span>
+                <FiSend className="text-lg" />
               )}
             </button>
           </div>
-          {input.length > 4500 && (
-            <p className="text-xs text-orange-600 px-2">{input.length}/5000 characters</p>
-          )}
+          <div className="text-xs text-gray-500 text-right px-1">
+            Press <kbd className="bg-gray-100 px-2 py-0.5 rounded text-gray-700 font-mono text-xs">Enter</kbd> to send
+          </div>
         </div>
       </div>
     </main>
