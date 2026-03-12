@@ -4,9 +4,8 @@ import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
 
 const API_URL = 'https://asiifbaloch-documentchat.hf.space'
-const REQUEST_TIMEOUT = 30000 // 30 seconds
+const REQUEST_TIMEOUT = 60000 // increased to 60s for HF cold start
 
-// Validate API response structure
 const validateUploadResponse = (data) => {
   if (!data || typeof data !== 'object') throw new Error('Invalid server response format')
   if (!data.filename || typeof data.filename !== 'string') throw new Error('Missing filename in response')
@@ -53,7 +52,6 @@ function App() {
       return
     }
 
-    // Add user message
     setMessages(prev => [...prev, { role: 'user', content: question }])
     setIsLoading(true)
 
@@ -61,7 +59,7 @@ function App() {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT)
 
-      const response = await fetch(`${API_URL}/api/ask`, {
+      const response = await fetch(`${API_URL}/ask`, { // fixed: removed /api
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question }),
@@ -89,7 +87,7 @@ function App() {
       let userMessage = 'Failed to get answer'
       
       if (error.name === 'AbortError') {
-        userMessage = 'Request timed out (30s). Please try again.'
+        userMessage = 'Request timed out (60s). Please try again.'
       } else if (error instanceof TypeError) {
         userMessage = 'Network error. Check your connection and backend URL.'
       } else {
@@ -97,7 +95,7 @@ function App() {
       }
 
       showToast(userMessage)
-      setMessages(prev => prev.slice(0, -1)) // Remove user message on error
+      setMessages(prev => prev.slice(0, -1))
     } finally {
       setIsLoading(false)
     }

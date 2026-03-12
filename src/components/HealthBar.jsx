@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { FiCheckCircle, FiAlertCircle, FiActivity } from 'react-icons/fi'
 
-const HEALTH_CHECK_INTERVAL = 30000 // 30 seconds
-const HEALTH_TIMEOUT = 10000 // 10 seconds per health check
+const HEALTH_CHECK_INTERVAL = 30000
+const HEALTH_TIMEOUT = 60000 // increased to 60s for HF cold start
 
 function HealthBar({ apiUrl }) {
   const [health, setHealth] = useState(null)
@@ -19,7 +19,7 @@ function HealthBar({ apiUrl }) {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), HEALTH_TIMEOUT)
 
-        const response = await fetch(`${apiUrl}/api/health`, {
+        const response = await fetch(`${apiUrl}/health`, { // fixed: removed /api
           signal: controller.signal,
         })
 
@@ -35,7 +35,6 @@ function HealthBar({ apiUrl }) {
 
         const data = await response.json()
 
-        // Validate health response structure
         if (!data || typeof data !== 'object') {
           if (isMounted) {
             setIsUnhealthy(true)
@@ -44,7 +43,6 @@ function HealthBar({ apiUrl }) {
           return
         }
 
-        // Check for required health fields
         if (!data.embedding_model || !data.pinecone || !data.reranker) {
           if (isMounted) {
             setIsUnhealthy(true)
@@ -55,7 +53,6 @@ function HealthBar({ apiUrl }) {
 
         if (isMounted) {
           setHealth(data)
-          // Consider unhealthy if any service is degraded or error
           const hasIssues = Object.values(data).some(v => v === 'degraded' || v === 'error')
           setIsUnhealthy(hasIssues)
         }
@@ -71,10 +68,7 @@ function HealthBar({ apiUrl }) {
       }
     }
 
-    // Check health immediately
     checkHealth()
-
-    // Then check periodically
     const interval = setInterval(checkHealth, HEALTH_CHECK_INTERVAL)
 
     return () => {

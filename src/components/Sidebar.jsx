@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { FiUploadCloud, FiFile, FiFileText } from 'react-icons/fi'
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
-const UPLOAD_TIMEOUT = 120000 // 2 minutes for file upload
+const UPLOAD_TIMEOUT = 120000 // 2 minutes
 
 function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
   const fileInputRef = useRef(null)
@@ -15,23 +15,19 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
       onError('No file selected')
       return false
     }
-
     if (!file.name.endsWith('.pdf')) {
       onError('Invalid file type. Only PDF files are supported.')
       return false
     }
-
     if (file.size > MAX_FILE_SIZE) {
       const sizeMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)
       onError(`File is too large. Maximum size is ${sizeMB}MB. Your file is ${(file.size / (1024 * 1024)).toFixed(1)}MB.`)
       return false
     }
-
     if (file.size === 0) {
       onError('File is empty')
       return false
     }
-
     return true
   }
 
@@ -48,7 +44,7 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch(`${apiUrl}/api/upload`, {
+      const response = await fetch(`${apiUrl}/upload`, { // fixed: removed /api
         method: 'POST',
         body: formData,
         signal: controller.signal,
@@ -70,16 +66,9 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
 
       const data = await response.json()
 
-      // Validate response structure
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid server response format')
-      }
-      if (!data.filename || typeof data.filename !== 'string') {
-        throw new Error('Server returned invalid filename')
-      }
-      if (data.chunks_processed === undefined) {
-        throw new Error('Server returned invalid chunk data')
-      }
+      if (!data || typeof data !== 'object') throw new Error('Invalid server response format')
+      if (!data.filename || typeof data.filename !== 'string') throw new Error('Server returned invalid filename')
+      if (data.chunks_processed === undefined) throw new Error('Server returned invalid chunk data')
 
       onUploadSuccess(data)
       setUploadProgress(0)
@@ -114,7 +103,6 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
     e.preventDefault()
     e.stopPropagation()
     setIsDragActive(false)
-
     const file = e.dataTransfer.files?.[0]
     if (file) handleFileSelect(file)
   }
