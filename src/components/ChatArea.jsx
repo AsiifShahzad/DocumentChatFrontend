@@ -77,8 +77,8 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
                   <p className="text-sm leading-relaxed break-words">{msg.content || 'No response'}</p>
 
                   {msg.role === 'ai' && msg.sources && Array.isArray(msg.sources) && msg.sources.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-300 border-opacity-30">
-                      <p className="text-xs font-medium mb-2 opacity-75">📚 Sources:</p>
+                    <div className="mt-4 pt-3 border-t border-gray-300 border-opacity-40">
+                      <p className="text-sm font-bold text-gray-700 mb-2">Sources</p>
                       <div className="flex flex-wrap gap-2">
                         {msg.sources.map((source, i) => {
                           // Validate source structure
@@ -88,7 +88,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
                           return (
                             <span
                               key={i}
-                              className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded truncate"
+                              className="text-sm font-semibold bg-blue-50 text-blue-700 px-3 py-1.5 rounded border border-blue-200 truncate"
                               title={`${sourceName} - Page ${page}`}
                             >
                               {sourceName} (p{page})
@@ -100,8 +100,8 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
                   )}
 
                   {msg.role === 'ai' && msg.confidence !== undefined && typeof msg.confidence === 'number' && (
-                    <div className="mt-2 text-xs opacity-75">
-                      <p>🎯 Confidence: {Math.round(Math.min(100, Math.max(0, msg.confidence * 100)))}%</p>
+                    <div className="mt-3 text-sm">
+                      <p className="font-bold text-gray-700">Confidence: <span className="text-blue-600">{Math.round(Math.min(100, Math.max(0, msg.confidence * 100)))}%</span></p>
                     </div>
                   )}
                 </div>

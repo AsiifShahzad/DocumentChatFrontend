@@ -3,8 +3,6 @@ import HealthBar from './components/HealthBar'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
 
-// Use environment variable for API URL (set in .env file)
-// Fallback to localhost for development if not set
 const API_URL = import.meta.env.VITE_API_URL || 'https://asiifbaloch-documentchat.hf.space'
 const REQUEST_TIMEOUT = 60000 
 
@@ -85,7 +83,6 @@ function App() {
         sources: validatedData.sources || [],
         confidence: typeof validatedData.confidence === 'number' ? validatedData.confidence : 0,
       }])
-      showToast('Answer received!', 'success')
     } catch (error) {
       let userMessage = 'Failed to get answer'
       
