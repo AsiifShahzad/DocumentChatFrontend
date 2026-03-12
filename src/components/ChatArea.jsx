@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
-import { FiSend, FiUploadCloud, FiShoppingCart } from 'react-icons/fi'
+import { FiSend, FiUploadCloud, FiBriefcase } from 'react-icons/fi'
 
 function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
   const [input, setInput] = useState('')
@@ -48,7 +48,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
             <div className="mb-6 relative">
               <div className="absolute inset-0 bg-blue-400 rounded-full opacity-20 animate-pulse-ring"></div>
               <div className="relative text-7xl text-blue-500 animate-bounce-icon">
-                <FiShoppingCart />
+                <FiBriefcase />
               </div>
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">Welcome to AskMyPDF</h2>
@@ -127,8 +127,8 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
 
       {/* Input Area */}
       <div className="border-t border-gray-200 bg-white p-4">
-        <div className="flex flex-col gap-2">
-          <div className="flex gap-3 items-end">
+        <div className="flex flex-col gap-2 items-center justify-center">
+          <div className="w-full max-w-md relative flex items-center">
             <input
               ref={inputRef}
               type="text"
@@ -142,22 +142,26 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
                   : 'Upload a PDF document first to ask questions...'
               }
               maxLength={5000}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 text-sm"
+              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 text-sm"
             />
             <button
               onClick={handleSend}
               disabled={!hasDocument || !input.trim() || isLoading}
-              className="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center justify-center h-10 w-10"
+              className="absolute right-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center justify-center h-8 w-8"
             >
               {isLoading ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <FiSend className="text-lg" />
+                <FiSend className="text-sm" />
               )}
             </button>
           </div>
-          <div className="text-xs text-gray-500 text-right px-1">
-            Press <kbd className="bg-gray-100 px-2 py-0.5 rounded text-gray-700 font-mono text-xs">Enter</kbd> to send
+          <div className="text-xs text-gray-500 flex gap-1 items-center justify-center">
+            <span>Press</span>
+            <kbd className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-300 text-gray-700 font-mono text-xs">
+              Enter
+            </kbd>
+            <span>to send</span>
           </div>
         </div>
       </div>
