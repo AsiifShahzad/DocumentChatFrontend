@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import HealthBar from './components/HealthBar'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
+import { FiMenu, FiX } from 'react-icons/fi'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://asiifbaloch-documentchat.hf.space'
 const REQUEST_TIMEOUT = 60000 
@@ -25,6 +26,7 @@ function App() {
   const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [toast, setToast] = useState(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const showToast = (message, type = 'error', duration = 3000) => {
     setToast({ message, type })
@@ -113,13 +115,49 @@ function App() {
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar 
-          document={document}
-          onUploadSuccess={handleUploadSuccess}
-          apiUrl={API_URL}
-          onError={showToast}
+      {/* Mobile Header - visible only on sm and below */}
+      <div className="md:hidden flex items-center justify-between bg-white border-b border-gray-200 px-4 py-3">
+        <h1 className="font-bold text-gray-900 text-lg">AskMyPDF</h1>
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="p-2 hover:bg-gray-100 rounded-lg transition"
+          aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+        >
+          {sidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+        </button>
+      </div>
+
+      {/* Mobile Sidebar Overlay - visible only on sm and below */}
+      {sidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-30 top-[calc(3.5rem+2.75rem)]"
+          onClick={() => setSidebarOpen(false)}
         />
+      )}
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop Sidebar - visible on md and up */}
+        <div className="hidden md:block">
+          <Sidebar 
+            document={document}
+            onUploadSuccess={handleUploadSuccess}
+            apiUrl={API_URL}
+            onError={showToast}
+          />
+        </div>
+
+        {/* Mobile Sidebar - in drawer on sm and below */}
+        {sidebarOpen && (
+          <div className="md:hidden fixed left-0 top-[calc(3.5rem+2.75rem)] bottom-0 z-40 bg-white border-r border-gray-200 w-80 overflow-y-auto">
+            <Sidebar 
+              document={document}
+              onUploadSuccess={handleUploadSuccess}
+              apiUrl={API_URL}
+              onError={showToast}
+            />
+          </div>
+        )}
+
         <ChatArea 
           messages={messages}
           isLoading={isLoading}

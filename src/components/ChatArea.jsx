@@ -40,24 +40,22 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
   }
 
   return (
-    <main className="flex-1 flex flex-col bg-white">
+    <main className="flex-1 flex flex-col bg-white w-full">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center">
-            <div className="mb-6 relative">
+          <div className="h-full flex flex-col items-center justify-center text-center px-4">
+            <div className="mb-3 sm:mb-6 relative">
               <div className="absolute inset-0 bg-blue-400 rounded-full opacity-20 animate-pulse-ring"></div>
-              <div className="relative text-7xl text-blue-500 animate-bounce-icon">
+              <div className="relative text-4xl sm:text-6xl md:text-7xl text-blue-500 animate-bounce-icon">
                 <FiBriefcase />
               </div>
             </div>
-            <h2 className="text-5xl font-extrabold text-blue-600 mb-4">AskMyPDF</h2>
-            <p className="text-gray-600 max-w-md leading-relaxed">
-              Start by uploading a PDF document in the sidebar.
-              <br />
-              Once processed, our AI will help you extract
-              <br />
-              insights, summarize, and answer questions.
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-blue-600 mb-2 sm:mb-4">AskMyPDF</h2>
+            <p className="text-xs sm:text-sm md:text-base text-gray-600 max-w-md leading-relaxed">
+              Start by uploading a PDF document.
+              <br className="hidden sm:block" />
+              Once processed, our AI will help you extract insights and answer questions.
             </p>
           </div>
         ) : (
@@ -68,18 +66,18 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-2xl rounded-lg px-4 py-3 ${
+                  className={`max-w-xs sm:max-w-md md:max-w-2xl rounded-lg px-3 py-2 sm:px-4 sm:py-3 ${
                     msg.role === 'user'
                       ? 'bg-primary text-white rounded-br-none'
                       : 'bg-gray-100 text-gray-900 rounded-bl-none border border-gray-200'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed break-words">{msg.content || 'No response'}</p>
+                  <p className="text-xs sm:text-sm leading-relaxed break-words">{msg.content || 'No response'}</p>
 
                   {msg.role === 'ai' && msg.sources && Array.isArray(msg.sources) && msg.sources.length > 0 && (
-                    <div className="mt-4 pt-3 border-t border-gray-300 border-opacity-40">
-                      <p className="text-sm font-bold text-gray-700 mb-2">Sources</p>
-                      <div className="flex flex-wrap gap-2">
+                    <div className="mt-2 sm:mt-4 pt-2 sm:pt-3 border-t border-gray-300 border-opacity-40">
+                      <p className="text-xs sm:text-sm font-bold text-gray-700 mb-1 sm:mb-2">Sources</p>
+                      <div className="flex flex-wrap gap-1 sm:gap-2">
                         {msg.sources.map((source, i) => {
                           // Validate source structure
                           if (!source || typeof source !== 'object') return null
@@ -88,7 +86,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
                           return (
                             <span
                               key={i}
-                              className="text-sm font-semibold bg-blue-50 text-blue-700 px-3 py-1.5 rounded border border-blue-200 truncate"
+                              className="text-xs sm:text-sm font-semibold bg-blue-50 text-blue-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded border border-blue-200 truncate"
                               title={`${sourceName} - Page ${page}`}
                             >
                               {sourceName} (p{page})
@@ -100,7 +98,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
                   )}
 
                   {msg.role === 'ai' && msg.confidence !== undefined && typeof msg.confidence === 'number' && (
-                    <div className="mt-3 text-sm">
+                    <div className="mt-2 sm:mt-3 text-xs sm:text-sm">
                       <p className="font-bold text-gray-700">Confidence: <span className="text-blue-600">{Math.round(Math.min(100, Math.max(0, msg.confidence * 100)))}%</span></p>
                     </div>
                   )}
@@ -110,11 +108,11 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
 
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 rounded-lg rounded-bl-none border border-gray-200 px-4 py-3">
-                  <div className="flex gap-2">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="bg-gray-100 rounded-lg rounded-bl-none border border-gray-200 px-3 py-2 sm:px-4 sm:py-3">
+                  <div className="flex gap-1.5 sm:gap-2">
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
                 </div>
               </div>
@@ -126,9 +124,9 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 bg-white p-4">
+      <div className="border-t border-gray-200 bg-white p-3 sm:p-4">
         <div className="flex flex-col gap-2 items-center justify-center">
-          <div className="w-full max-w-md relative flex items-center">
+          <div className="w-full max-w-sm sm:max-w-md md:max-w-2xl relative flex items-center">
             <input
               ref={inputRef}
               type="text"
@@ -138,25 +136,25 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
               disabled={!hasDocument || isLoading}
               placeholder={
                 hasDocument
-                  ? 'Ask your question here...'
-                  : 'Upload a PDF document first to ask questions...'
+                  ? 'Ask your question...'
+                  : 'Upload PDF first...'
               }
               maxLength={5000}
-              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 text-sm"
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 pr-10 sm:pr-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 text-xs sm:text-sm"
             />
             <button
               onClick={handleSend}
               disabled={!hasDocument || !input.trim() || isLoading}
-              className="absolute right-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center justify-center h-8 w-8"
+              className="absolute right-1.5 sm:right-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8"
             >
               {isLoading ? (
-                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-2 h-2 sm:w-3 sm:h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <FiSend className="text-sm" />
+                <FiSend className="text-xs sm:text-sm" />
               )}
             </button>
           </div>
-          <div className="text-xs text-gray-500 flex gap-1 items-center justify-center">
+          <div className="text-xs text-gray-500 flex gap-0.5 items-center justify-center hidden sm:flex">
             <span>Press</span>
             <kbd className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-300 text-gray-700 font-mono text-xs">
               Enter

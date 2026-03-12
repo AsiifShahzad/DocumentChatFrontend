@@ -109,15 +109,15 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
   }
 
   return (
-    <aside className="w-80 bg-white border-r border-gray-200 flex flex-col">
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-            <FiFile className="text-xl text-blue-500" />
+    <aside className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
+      <div className="p-4 sm:p-6 border-b border-gray-200">
+        <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+            <FiFile className="text-base sm:text-xl text-blue-500" />
           </div>
-          <div>
-            <h1 className="font-bold text-gray-900">AskMyPDF</h1>
-            <p className="text-xs text-gray-600">Analyze & query your PDFs</p>
+          <div className="min-w-0">
+            <h1 className="font-bold text-gray-900 text-sm sm:text-base">AskMyPDF</h1>
+            <p className="text-xs text-gray-600 hidden sm:block">Analyze & query your PDFs</p>
           </div>
         </div>
 
@@ -127,18 +127,18 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
           onDragOver={handleDrag}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition ${
+          className={`border-2 border-dashed rounded-lg p-4 sm:p-6 text-center cursor-pointer transition ${
             isDragActive
               ? 'border-blue-400 bg-blue-50'
               : 'border-gray-300 hover:border-gray-400'
           }`}
         >
-          <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center justify-center gap-2">
-            <FiUploadCloud className="text-lg text-blue-500" /> Upload Document
+          <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center justify-center gap-1 sm:gap-2">
+            <FiUploadCloud className="text-sm sm:text-lg text-blue-500" /> Upload Document
           </h3>
-          <FiUploadCloud className="text-4xl text-blue-400 mb-3 mx-auto" />
-          <p className="font-medium text-gray-900 text-sm">Click or drag PDF here</p>
-          <p className="text-xs text-gray-500 mt-2">Maximum file size 50MB</p>
+          <FiUploadCloud className="text-2xl sm:text-4xl text-blue-400 mb-2 sm:mb-3 mx-auto" />
+          <p className="font-medium text-gray-900 text-xs sm:text-sm">Click or drag PDF here</p>
+          <p className="text-xs text-gray-500 mt-1 sm:mt-2">Maximum 50MB</p>
         </div>
 
         <input
@@ -150,15 +150,15 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
         />
 
         {isUploading && (
-          <div className="mt-4 space-y-2">
+          <div className="mt-3 sm:mt-4 space-y-2">
             <div className="flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-sm text-gray-600">Uploading...</span>
+              <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-xs sm:text-sm text-gray-600">Uploading...</span>
             </div>
             {uploadProgress > 0 && (
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
                 <div
-                  className="bg-primary h-2 rounded-full transition-all duration-300"
+                  className="bg-primary h-1.5 sm:h-2 rounded-full transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
                 ></div>
               </div>
@@ -167,31 +167,31 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
         )}
       </div>
 
-      <div className="p-6 flex-1">
-        <h2 className="text-sm font-semibold text-gray-900 mb-6">Current Document</h2>
+      <div className="p-4 sm:p-6 flex-1">
+        <h2 className="text-xs sm:text-sm font-semibold text-gray-900 mb-3 sm:mb-6">Current Document</h2>
         
         {document ? (
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border-2 border-blue-300 animate-slide-in">
-            <div className="flex items-start gap-3">
-              <div className="text-3xl text-blue-500 animate-bounce-icon">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 sm:p-4 border-2 border-blue-300 animate-slide-in">
+            <div className="flex items-start gap-2 sm:gap-3">
+              <div className="text-xl sm:text-3xl text-blue-500 animate-bounce-icon flex-shrink-0">
                 <FiFileText />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-blue-900 truncate">{document.filename}</p>
-                <p className="text-xs text-blue-700 mt-2 font-medium">
-                  ✓ {document.chunks_processed} chunks processed
+                <p className="font-semibold text-blue-900 truncate text-xs sm:text-sm">{document.filename}</p>
+                <p className="text-xs text-blue-700 mt-1 sm:mt-2 font-medium">
+                  ✓ {document.chunks_processed} chunks
                 </p>
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border-2 border-dashed border-gray-300">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 sm:p-6 border-2 border-dashed border-gray-300">
             <div className="flex flex-col items-center justify-center text-center">
-              <div className="text-5xl text-gray-300 mb-3">
+              <div className="text-3xl sm:text-5xl text-gray-300 mb-2 sm:mb-3">
                 <FiFile />
               </div>
-              <p className="text-sm font-medium text-gray-600">No document active</p>
-              <p className="text-xs text-gray-500 mt-1">Upload a PDF to start chatting</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-600">No document</p>
+              <p className="text-xs text-gray-500 mt-1">Upload to start</p>
             </div>
           </div>
         )}

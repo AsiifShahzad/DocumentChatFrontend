@@ -100,31 +100,39 @@ function HealthBar({ apiUrl }) {
     return labelMap[status] || 'Unknown'
   }
 
-  // Only show health bar when checking or when there's an issue
-  if (!isChecking && !isUnhealthy && health) {
-    return null
+  if (isChecking && !health) {
+    return (
+      <div className="bg-gray-100 border-b border-gray-200 px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+          <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+          <span className="hidden sm:inline">Checking backend health...</span>
+          <span className="sm:hidden">Loading...</span>
+        </div>
+      </div>
+    )
   }
 
-  return (
-    <div className={`${
-      isUnhealthy 
-        ? 'bg-red-50 border-b border-red-200' 
-        : 'bg-blue-50 border-b border-blue-200'
-    } px-6 py-3 transition-colors`}>
-      {isChecking && !health ? (
-        <div className="flex items-center gap-2 text-sm text-blue-600">
-          <FiActivity className="w-4 h-4 animate-spin" />
-          Checking backend services...
+  if (isUnhealthy) {
+    return (
+      <div className="bg-red-50 border-b border-red-200 px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-xs sm:text-sm">
+          <FiAlertCircle className="text-red-600 flex-shrink-0" />
+          <span className="text-red-800 font-medium hidden sm:inline">Backend service unavailable</span>
+          <span className="text-red-800 font-medium sm:hidden">Connection issue</span>
         </div>
-      ) : isUnhealthy ? (
-        <p className="text-sm text-red-700 font-medium flex items-center gap-2">
-          <FiAlertCircle className="w-4 h-4" /> Backend service unavailable - Some services are degraded or offline
-        </p>
-      ) : (
-        <p className="text-sm text-gray-600 flex items-center gap-2">
-          <FiAlertCircle className="w-4 h-4" /> Unable to reach backend services
-        </p>
-      )}
+      </div>
+    )
+  }
+
+  if (!health) return null
+
+  return (
+    <div className="bg-green-50 border-b border-green-200 px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between">
+      <div className="flex items-center gap-2 text-xs sm:text-sm text-green-800 font-medium">
+        <FiCheckCircle className="flex-shrink-0" />
+        <span className="hidden sm:inline">✓ Backend services healthy</span>
+        <span className="sm:hidden">✓ Connected</span>
+      </div>
     </div>
   )
 }
