@@ -3,8 +3,9 @@ import HealthBar from './components/HealthBar'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
 
-const API_URL = 'https://huggingface.co/spaces/AsiifBaloch/DocumentChat'
-const REQUEST_TIMEOUT = 60000 // increased to 60s for HF cold start
+// Use the actual HuggingFace Spaces API endpoint, not the spaces URL
+const API_URL = 'https://asiifbaloch-documentchat.hf.space'
+const REQUEST_TIMEOUT = 60000 
 
 const validateUploadResponse = (data) => {
   if (!data || typeof data !== 'object') throw new Error('Invalid server response format')
@@ -59,11 +60,12 @@ function App() {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT)
 
-      const response = await fetch(`${API_URL}/ask`, { // fixed: removed /api
+      const response = await fetch(`${API_URL}/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question }),
         signal: controller.signal,
+        credentials: 'include',
       })
 
       clearTimeout(timeoutId)

@@ -6,5 +6,12 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    // Disable HMR eval mode to avoid CSP conflicts
+    middlewareMode: false,
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+      port: 5173,
+    },
   },
 })

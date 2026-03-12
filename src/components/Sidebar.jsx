@@ -44,10 +44,11 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch(`${apiUrl}/upload`, { // fixed: removed /api
+      const response = await fetch(`${apiUrl}/upload`, {
         method: 'POST',
         body: formData,
         signal: controller.signal,
+        credentials: 'include',
       })
 
       clearTimeout(timeoutId)
