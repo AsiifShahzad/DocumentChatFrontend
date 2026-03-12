@@ -51,7 +51,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
                 <FiBriefcase />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">Welcome to AskMyPDF</h2>
+            <h2 className="text-5xl font-extrabold text-blue-600 mb-4">AskMyPDF</h2>
             <p className="text-gray-600 max-w-md leading-relaxed">
               Start by uploading a PDF document in the sidebar.
               <br />
