@@ -3,8 +3,9 @@ import HealthBar from './components/HealthBar'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
 
-// Use the actual HuggingFace Spaces API endpoint, not the spaces URL
-const API_URL = 'https://asiifbaloch-documentchat.hf.space'
+// Use environment variable for API URL (set in .env file)
+// Fallback to localhost for development if not set
+const API_URL = import.meta.env.VITE_API_URL || 'https://asiifbaloch-documentchat.hf.space'
 const REQUEST_TIMEOUT = 60000 
 
 const validateUploadResponse = (data) => {
