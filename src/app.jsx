@@ -3,7 +3,7 @@ import HealthBar from './components/HealthBar'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
 
-const API_URL = 'https://asiifbaloch-documentchat.hf.space'
+const API_URL = 'https://huggingface.co/spaces/AsiifBaloch/DocumentChat'
 const REQUEST_TIMEOUT = 60000 // increased to 60s for HF cold start
 
 const validateUploadResponse = (data) => {
