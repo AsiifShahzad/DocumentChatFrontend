@@ -114,7 +114,7 @@ function App() {
       )}
 
       {/* Mobile Header - visible only on sm and below */}
-      <div className="md:hidden flex items-center justify-center bg-white border-b border-gray-200 px-4 py-3">
+      <div className="md:hidden flex items-center justify-center bg-white border-b border-gray-200 px-4 py-2">
         <h1 className="font-bold text-gray-900 text-lg">AskMyPDF</h1>
       </div>
 

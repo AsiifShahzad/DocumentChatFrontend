@@ -129,19 +129,19 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
   }
 
   return (
-    <main className="flex-1 flex flex-col bg-white w-full">
+    <main className="flex-1 flex flex-col bg-white w-full overflow-hidden">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6 space-y-2 sm:space-y-4 md:space-y-6">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center px-4">
-            <div className="mb-3 sm:mb-6 relative">
+          <div className="h-full flex flex-col items-center justify-center text-center px-2 sm:px-4">
+            <div className="mb-2 sm:mb-6 relative">
               <div className="absolute inset-0 bg-blue-400 rounded-full opacity-20 animate-pulse-ring"></div>
-              <div className="relative text-4xl sm:text-6xl md:text-7xl text-blue-500 animate-bounce-icon">
+              <div className="relative text-3xl sm:text-6xl md:text-7xl text-blue-500 animate-bounce-icon">
                 <FiBriefcase />
               </div>
             </div>
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-blue-600 mb-2 sm:mb-4">AskMyPDF</h2>
-            <p className="text-xs sm:text-sm md:text-base text-gray-600 max-w-md leading-relaxed">
+            <h2 className="text-xl sm:text-4xl md:text-5xl font-extrabold text-blue-600 mb-1 sm:mb-4">AskMyPDF</h2>
+            <p className="text-xs text-gray-600 max-w-md leading-relaxed">
               Start by uploading a PDF document.
               <br className="hidden sm:block" />
               Once processed, our AI will help you extract insights and answer questions.
@@ -155,7 +155,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-xs sm:max-w-md md:max-w-2xl rounded-lg px-3 py-2 sm:px-4 sm:py-3 ${
+                  className={`max-w-xs sm:max-w-md md:max-w-2xl rounded-lg px-2.5 py-1.5 sm:px-4 sm:py-3 ${
                     msg.role === 'user'
                       ? 'bg-primary text-white rounded-br-none'
                       : 'bg-gray-100 text-gray-900 rounded-bl-none border border-gray-200'
@@ -213,21 +213,21 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 bg-white p-3 sm:p-4">
-        <div className="flex flex-col gap-2 items-center justify-center">
-          <div className="w-full max-w-sm sm:max-w-md md:max-w-2xl relative flex items-center gap-2">
+      <div className="border-t border-gray-200 bg-white p-2 sm:p-4">
+        <div className="flex flex-col gap-1 items-center justify-center">
+          <div className="w-full max-w-sm sm:max-w-md md:max-w-2xl relative flex items-center gap-1.5 sm:gap-2">
             {/* Upload button - visible on mobile */}
             <button
               onClick={handleUploadButtonClick}
               disabled={isUploading}
-              className="md:hidden bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center justify-center h-10 w-10 flex-shrink-0"
+              className="md:hidden bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center justify-center h-9 w-9 flex-shrink-0"
               title="Upload PDF"
               aria-label="Upload PDF"
             >
               {isUploading ? (
-                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-2.5 h-2.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <FiPlus className="text-lg" />
+                <FiPlus className="text-base" />
               )}
             </button>
 
@@ -244,12 +244,12 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
                   : 'Upload PDF first...'
               }
               maxLength={5000}
-              className="flex-1 px-3 sm:px-4 py-2 sm:py-3 pr-10 sm:pr-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 text-xs sm:text-sm"
+              className="flex-1 px-2.5 sm:px-4 py-1.5 sm:py-3 pr-9 sm:pr-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 text-xs sm:text-sm"
             />
             <button
               onClick={handleSend}
               disabled={!hasDocument || !input.trim() || isLoading}
-              className="absolute right-1.5 sm:right-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center justify-center h-7 w-7 sm:h-8 sm:w-8"
+              className="absolute right-1 sm:right-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center justify-center h-6 w-6 sm:h-8 sm:w-8"
             >
               {isLoading ? (
                 <div className="w-2 h-2 sm:w-3 sm:h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -258,7 +258,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
               )}
             </button>
           </div>
-          <div className="text-xs text-gray-500 flex gap-0.5 items-center justify-center hidden sm:flex">
+          <div className="text-xs text-gray-500 flex gap-0.5 items-center justify-center hidden md:flex">
             <span>Press</span>
             <kbd className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-300 text-gray-700 font-mono text-xs">
               Enter
