@@ -49,12 +49,6 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
       formData.append('file', file)
       formData.append('session_id', sessionId)
 
-      // Debug: log what we're sending
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.log('[ChatArea] Uploading with session_id:', sessionId)
-        console.log('[ChatArea] File:', file.name, 'Size:', file.size)
-      }
-
       const response = await fetch(`${apiUrl}/upload`, {
         method: 'POST',
         body: formData,
@@ -69,7 +63,6 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
         let errorDetail = ''
         
         try {
-          // Try to parse as JSON first (backend might return JSON errors)
           const errorJson = await response.json()
           if (errorJson.detail) {
             errorDetail = errorJson.detail
@@ -79,7 +72,6 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
             errorDetail = JSON.stringify(errorJson)
           }
         } catch (e) {
-          // If not JSON, try as text
           try {
             errorDetail = await response.text()
           } catch (e2) {
@@ -101,6 +93,15 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
       if (!data || typeof data !== 'object') throw new Error('Invalid server response format')
       if (!data.filename || typeof data.filename !== 'string') throw new Error('Server returned invalid filename')
       if (data.chunks_processed === undefined) throw new Error('Server returned invalid chunk data')
+
+      // Save the session_id from response to localStorage if provided
+      if (data.session_id) {
+        try {
+          localStorage.setItem('documentChatSessionId', data.session_id)
+        } catch (e) {
+          // Silently fail if localStorage unavailable
+        }
+      }
 
       onUploadClick(data)
     } catch (error) {

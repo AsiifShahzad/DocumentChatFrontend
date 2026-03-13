@@ -29,8 +29,8 @@ function App() {
 
   // Generate session ID on app load and setup cleanup
   useEffect(() => {
-    // Generate session ID - only once per session
-    let currentSessionId = sessionStorage.getItem('documentChatSessionId')
+    // Try to get existing session ID from localStorage
+    let currentSessionId = localStorage.getItem('documentChatSessionId')
     if (!currentSessionId) {
       try {
         // Try to use crypto API if available (more secure)
@@ -42,19 +42,10 @@ function App() {
           // Fallback for older browsers
           currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
         }
-        sessionStorage.setItem('documentChatSessionId', currentSessionId)
-        // Log for debugging
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          console.log('[App] Session ID created:', currentSessionId)
-        }
+        localStorage.setItem('documentChatSessionId', currentSessionId)
       } catch (e) {
-        // Handle private browsing mode where sessionStorage might be unavailable
+        // Handle private browsing mode where localStorage might be unavailable
         currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
-      }
-    } else {
-      // Log existing session ID
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.log('[App] Using existing session ID:', currentSessionId)
       }
     }
     setSessionId(currentSessionId)
@@ -62,10 +53,14 @@ function App() {
     // Setup auto-cleanup on page unload
     const handleBeforeUnload = () => {
       try {
-        const sid = sessionStorage.getItem('documentChatSessionId')
+        const sid = localStorage.getItem('documentChatSessionId')
         if (sid) {
-          // Use sendBeacon for reliable delivery even on page unload
-          navigator.sendBeacon(`${API_URL}/cleanup-session/${sid}`)
+          // Use navigator.sendBeacon with URLSearchParams for reliable delivery
+          navigator.sendBeacon(
+            `${API_URL}/cleanup-session`,
+            new URLSearchParams({ session_id: sid })
+          )
+          localStorage.removeItem('documentChatSessionId')
         }
       } catch (e) {
         // Silently fail - cleanup is best-effort

@@ -49,12 +49,6 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
       formData.append('file', file)
       formData.append('session_id', sessionId)
 
-      // Debug: log what we're sending
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.log('[Sidebar] Uploading with session_id:', sessionId)
-        console.log('[Sidebar] File:', file.name, 'Size:', file.size)
-      }
-
       const response = await fetch(`${apiUrl}/upload`, {
         method: 'POST',
         body: formData,
@@ -70,7 +64,6 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
         let errorDetail = ''
         
         try {
-          // Try to parse as JSON first (backend might return JSON errors)
           const errorJson = await response.json()
           if (errorJson.detail) {
             errorDetail = errorJson.detail
@@ -80,7 +73,6 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
             errorDetail = JSON.stringify(errorJson)
           }
         } catch (e) {
-          // If not JSON, try as text
           try {
             errorDetail = await response.text()
           } catch (e2) {
@@ -102,6 +94,15 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
       if (!data || typeof data !== 'object') throw new Error('Invalid server response format')
       if (!data.filename || typeof data.filename !== 'string') throw new Error('Server returned invalid filename')
       if (data.chunks_processed === undefined) throw new Error('Server returned invalid chunk data')
+
+      // Save the session_id from response to localStorage if provided
+      if (data.session_id) {
+        try {
+          localStorage.setItem('documentChatSessionId', data.session_id)
+        } catch (e) {
+          // Silently fail if localStorage unavailable
+        }
+      }
 
       onUploadSuccess(data)
       setUploadProgress(0)
