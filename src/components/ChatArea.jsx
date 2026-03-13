@@ -60,12 +60,28 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
 
       if (!response.ok) {
         let errorMessage = 'Upload failed'
+        let errorDetail = ''
+        
         try {
-          const errorData = await response.text()
-          errorMessage = errorData || `Server error (${response.status})`
+          // Try to parse as JSON first (backend might return JSON errors)
+          const errorJson = await response.json()
+          if (errorJson.detail) {
+            errorDetail = errorJson.detail
+          } else if (errorJson.error) {
+            errorDetail = errorJson.error
+          } else {
+            errorDetail = JSON.stringify(errorJson)
+          }
         } catch (e) {
-          errorMessage = `Server error (${response.status}): ${response.statusText}`
+          // If not JSON, try as text
+          try {
+            errorDetail = await response.text()
+          } catch (e2) {
+            errorDetail = response.statusText
+          }
         }
+        
+        errorMessage = `Upload failed (${response.status}): ${errorDetail || 'Unknown error'}`
         throw new Error(errorMessage)
       }
 
@@ -73,7 +89,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
       try {
         data = await response.json()
       } catch (jsonError) {
-        throw new Error('Invalid response format from server')
+        throw new Error('Server returned invalid response format')
       }
 
       if (!data || typeof data !== 'object') throw new Error('Invalid server response format')
