@@ -81,13 +81,25 @@ function App() {
       handleBeforeUnload()
     }
 
+    // Also listen to storage changes (for sync across tabs and handling mobile quirks)
+    const handleStorageChange = (e) => {
+      if (e.key === 'documentChatSessionId') {
+        console.log('[SESSION] Storage changed externally. New value:', e.newValue)
+        if (e.newValue) {
+          setSessionId(e.newValue)
+        }
+      }
+    }
+
     window.addEventListener('beforeunload', handleBeforeUnload)
     window.addEventListener('pagehide', handlePageHide)
-    console.log('[SESSION] beforeunload and pagehide listeners attached')
+    window.addEventListener('storage', handleStorageChange)
+    console.log('[SESSION] beforeunload, pagehide, and storage listeners attached')
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
       window.removeEventListener('pagehide', handlePageHide)
+      window.removeEventListener('storage', handleStorageChange)
       console.log('[SESSION] cleanup listeners removed')
     }
   }, [])
@@ -103,12 +115,19 @@ function App() {
     try {
       const validatedDoc = validateUploadResponse(doc)
       
+      // Force localStorage sync and verify on mobile
+      const currentStoredSessionId = localStorage.getItem('documentChatSessionId')
+      console.log('[UPLOAD-SUCCESS] State sessionId:', sessionId)
+      console.log('[UPLOAD-SUCCESS] localStorage sessionId:', currentStoredSessionId)
+      console.log('[UPLOAD-SUCCESS] Update state:', currentStoredSessionId || sessionId)
+      
+      // Force state update with localStorage value if available
+      if (currentStoredSessionId) {
+        setSessionId(currentStoredSessionId)
+      }
+      
       // Check if we have a different session now (important for mobile)
       const oldSessionId = sessionId
-      const currentStoredSessionId = localStorage.getItem('documentChatSessionId')
-      
-      console.log('[UPLOAD-SUCCESS] State sessionId:', oldSessionId)
-      console.log('[UPLOAD-SUCCESS] localStorage sessionId:', currentStoredSessionId)
       
       if (currentStoredSessionId && oldSessionId && currentStoredSessionId !== oldSessionId) {
         console.log('[UPLOAD-CLEANUP] Session changed. Old:', oldSessionId, 'New:', currentStoredSessionId)
