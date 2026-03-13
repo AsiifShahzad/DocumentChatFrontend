@@ -112,44 +112,31 @@ function App() {
   }
 
   const handleUploadSuccess = (doc) => {
-    try {
-      const validatedDoc = validateUploadResponse(doc)
-      
-      // Force localStorage sync and verify on mobile
-      const currentStoredSessionId = localStorage.getItem('documentChatSessionId')
-      console.log('[UPLOAD-SUCCESS] State sessionId:', sessionId)
-      console.log('[UPLOAD-SUCCESS] localStorage sessionId:', currentStoredSessionId)
-      console.log('[UPLOAD-SUCCESS] Update state:', currentStoredSessionId || sessionId)
-      
-      // Force state update with localStorage value if available
-      if (currentStoredSessionId) {
-        setSessionId(currentStoredSessionId)
-      }
-      
-      // Check if we have a different session now (important for mobile)
-      const oldSessionId = sessionId
-      
-      if (currentStoredSessionId && oldSessionId && currentStoredSessionId !== oldSessionId) {
-        console.log('[UPLOAD-CLEANUP] Session changed. Old:', oldSessionId, 'New:', currentStoredSessionId)
-        console.log('[UPLOAD-CLEANUP] Explicitly cleaning old session:', oldSessionId)
-        // Clean the old session explicitly
-        try {
-          navigator.sendBeacon(
-            `${API_URL}/cleanup-session`,
-            new URLSearchParams({ session_id: oldSessionId })
-          )
-        } catch (e) {
-          console.error('[UPLOAD-CLEANUP] Failed to cleanup old session:', e)
-        }
-      } else if (currentStoredSessionId === oldSessionId) {
-        console.log('[UPLOAD-SUCCESS] Using same session_id for new file')
-      }
-      
-      setDocument(validatedDoc)
-      setMessages([])
-      showToast(`"${validatedDoc.filename}" uploaded successfully! (${validatedDoc.chunks_processed} chunks)`, 'success')
-    } catch (error) {
-      showToast(`Upload validation failed: ${error.message}`)
+  try {
+    const validatedDoc = validateUploadResponse(doc)
+
+    // Clean up old session from Pinecone before starting fresh
+    const oldSessionId = localStorage.getItem('documentChatSessionId')
+    if (oldSessionId) {
+      navigator.sendBeacon(
+        `${API_URL}/cleanup-session`,
+        new URLSearchParams({ session_id: oldSessionId })
+      )
+    }
+
+    // Always generate a fresh session_id for every new document upload
+    const newSessionId = 'session_' + Date.now() + '_' +
+      Array.from(crypto.getRandomValues(new Uint8Array(8)),
+        x => x.toString(16).padStart(2, '0')).join('')
+
+    localStorage.setItem('documentChatSessionId', newSessionId)
+    setSessionId(newSessionId)
+
+    setDocument(validatedDoc)
+    setMessages([])
+    showToast(`"${validatedDoc.filename}" uploaded successfully! (${validatedDoc.chunks_processed} chunks)`, 'success')
+  } catch (error) {
+    showToast(`Upload validation failed: ${error.message}`)
     }
   }
 
