@@ -32,19 +32,35 @@ function App() {
     // Generate session ID - only once per session
     let currentSessionId = sessionStorage.getItem('documentChatSessionId')
     if (!currentSessionId) {
-      currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
-      sessionStorage.setItem('documentChatSessionId', currentSessionId)
+      try {
+        // Try to use crypto API if available (more secure)
+        const array = new Uint8Array(16)
+        if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+          crypto.getRandomValues(array)
+          currentSessionId = 'session_' + Date.now() + '_' + Array.from(array, x => x.toString(16).padStart(2, '0')).join('')
+        } else {
+          // Fallback for older browsers
+          currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+        }
+        sessionStorage.setItem('documentChatSessionId', currentSessionId)
+      } catch (e) {
+        // Handle private browsing mode where sessionStorage might be unavailable
+        console.warn('[App] sessionStorage unavailable, using in-memory session')
+        currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+      }
     }
     setSessionId(currentSessionId)
-    console.log('[App] Session ID:', currentSessionId)
 
     // Setup auto-cleanup on page unload
-    const handleBeforeUnload = async () => {
-      const sid = sessionStorage.getItem('documentChatSessionId')
-      if (sid) {
-        console.log('[App] Cleaning up session:', sid)
-        // Use sendBeacon for reliable delivery even on page unload
-        navigator.sendBeacon(`${API_URL}/cleanup-session/${sid}`)
+    const handleBeforeUnload = () => {
+      try {
+        const sid = sessionStorage.getItem('documentChatSessionId')
+        if (sid) {
+          // Use sendBeacon for reliable delivery even on page unload
+          navigator.sendBeacon(`${API_URL}/cleanup-session/${sid}`)
+        }
+      } catch (e) {
+        // Silently fail - cleanup is best-effort
       }
     }
 
@@ -57,7 +73,9 @@ function App() {
 
   const showToast = (message, type = 'error', duration = 3000) => {
     setToast({ message, type })
-    setTimeout(() => setToast(null), duration)
+    const timeoutId = setTimeout(() => setToast(null), duration)
+    // Return function to clear timeout if needed
+    return () => clearTimeout(timeoutId)
   }
 
   const handleUploadSuccess = (doc) => {
@@ -78,6 +96,11 @@ function App() {
     }
     if (!document) {
       showToast('Please upload a document first')
+      return
+    }
+
+    // Prevent duplicate messages during loading
+    if (isLoading) {
       return
     }
 
@@ -103,7 +126,13 @@ function App() {
         throw new Error(`Server error (${response.status}): ${errorText || 'Failed to get answer'}`)
       }
 
-      const data = await response.json()
+      let data
+      try {
+        data = await response.json()
+      } catch (jsonError) {
+        throw new Error('Invalid response format from server')
+      }
+
       const validatedData = validateAnswerResponse(data)
 
       setMessages(prev => [...prev, {

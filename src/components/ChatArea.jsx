@@ -69,7 +69,12 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
         throw new Error(errorMessage)
       }
 
-      const data = await response.json()
+      let data
+      try {
+        data = await response.json()
+      } catch (jsonError) {
+        throw new Error('Invalid response format from server')
+      }
 
       if (!data || typeof data !== 'object') throw new Error('Invalid server response format')
       if (!data.filename || typeof data.filename !== 'string') throw new Error('Server returned invalid filename')
@@ -118,7 +123,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
     // Sanitize input - basic XSS prevention
     const sanitizedInput = input.trim()
     if (sanitizedInput.length > 5000) {
-      alert('Question is too long (max 5000 characters)')
+      onError('Question is too long (max 5000 characters)')
       return
     }
 

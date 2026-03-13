@@ -15,19 +15,17 @@ function HealthBar({ apiUrl }) {
     const checkHealth = async () => {
       try {
         setIsChecking(true)
-        console.log('[HealthBar] Checking health at:', `${apiUrl}/health`)
 
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), HEALTH_TIMEOUT)
 
-        const response = await fetch(`${apiUrl}/health`, { // fixed: removed /api
+        const response = await fetch(`${apiUrl}/health`, {
           signal: controller.signal,
         })
 
         clearTimeout(timeoutId)
 
         if (!response.ok) {
-          console.error('[HealthBar] Health check failed with status:', response.status)
           if (isMounted) {
             setIsUnhealthy(true)
             setHealth(null)
@@ -35,7 +33,16 @@ function HealthBar({ apiUrl }) {
           return
         }
 
-        const data = await response.json()
+        let data
+        try {
+          data = await response.json()
+        } catch (jsonError) {
+          if (isMounted) {
+            setIsUnhealthy(true)
+            setHealth(null)
+          }
+          return
+        }
 
         if (!data || typeof data !== 'object') {
           if (isMounted) {
@@ -59,7 +66,6 @@ function HealthBar({ apiUrl }) {
           setIsUnhealthy(hasIssues)
         }
       } catch (error) {
-        console.error('[HealthBar] Health check error:', error.message)
         if (isMounted) {
           setIsUnhealthy(true)
           setHealth(null)

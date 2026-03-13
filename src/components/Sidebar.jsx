@@ -70,7 +70,12 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
         throw new Error(errorMessage)
       }
 
-      const data = await response.json()
+      let data
+      try {
+        data = await response.json()
+      } catch (jsonError) {
+        throw new Error('Invalid response format from server')
+      }
 
       if (!data || typeof data !== 'object') throw new Error('Invalid server response format')
       if (!data.filename || typeof data.filename !== 'string') throw new Error('Server returned invalid filename')
