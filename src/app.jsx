@@ -27,27 +27,22 @@ function App() {
   const [toast, setToast] = useState(null)
   const [sessionId, setSessionId] = useState(null)
 
-  // Generate session ID on app load and setup cleanup
   useEffect(() => {
-    // Try to get existing session ID from localStorage
     let currentSessionId = localStorage.getItem('documentChatSessionId')
     console.log('[SESSION] Retrieved from localStorage:', currentSessionId)
     
     if (!currentSessionId) {
       try {
-        // Try to use crypto API if available (more secure)
         const array = new Uint8Array(16)
         if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
           crypto.getRandomValues(array)
           currentSessionId = 'session_' + Date.now() + '_' + Array.from(array, x => x.toString(16).padStart(2, '0')).join('')
         } else {
-          // Fallback for older browsers
           currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
         }
         localStorage.setItem('documentChatSessionId', currentSessionId)
         console.log('[SESSION] Generated new session:', currentSessionId)
       } catch (e) {
-        // Handle private browsing mode where localStorage might be unavailable
         currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
         console.log('[SESSION] localStorage unavailable, using session:', currentSessionId)
       }
@@ -56,13 +51,11 @@ function App() {
     }
     setSessionId(currentSessionId)
 
-    // Setup auto-cleanup on page unload
     const handleBeforeUnload = () => {
       try {
         const sid = localStorage.getItem('documentChatSessionId')
         console.log('[CLEANUP] Before unload - cleaning session:', sid)
         if (sid) {
-          // Use navigator.sendBeacon with URLSearchParams for reliable delivery
           const result = navigator.sendBeacon(
             `${API_URL}/cleanup-session`,
             new URLSearchParams({ session_id: sid })
@@ -81,7 +74,6 @@ function App() {
       handleBeforeUnload()
     }
 
-    // Also listen to storage changes (for sync across tabs and handling mobile quirks)
     const handleStorageChange = (e) => {
       if (e.key === 'documentChatSessionId') {
         console.log('[SESSION] Storage changed externally. New value:', e.newValue)
@@ -107,36 +99,25 @@ function App() {
   const showToast = (message, type = 'error', duration = 3000) => {
     setToast({ message, type })
     const timeoutId = setTimeout(() => setToast(null), duration)
-    // Return function to clear timeout if needed
     return () => clearTimeout(timeoutId)
   }
 
   const handleUploadSuccess = (doc) => {
-  try {
-    const validatedDoc = validateUploadResponse(doc)
+    try {
+      const validatedDoc = validateUploadResponse(doc)
 
-    // Clean up old session from Pinecone before starting fresh
-    const oldSessionId = localStorage.getItem('documentChatSessionId')
-    if (oldSessionId) {
-      navigator.sendBeacon(
-        `${API_URL}/cleanup-session`,
-        new URLSearchParams({ session_id: oldSessionId })
-      )
-    }
+      // Use the session_id the backend actually used — single source of truth
+      const confirmedSessionId = doc.session_id || sessionId
+      console.log('[APP] Confirmed session_id from backend:', confirmedSessionId)
 
-    // Always generate a fresh session_id for every new document upload
-    const newSessionId = 'session_' + Date.now() + '_' +
-      Array.from(crypto.getRandomValues(new Uint8Array(8)),
-        x => x.toString(16).padStart(2, '0')).join('')
+      localStorage.setItem('documentChatSessionId', confirmedSessionId)
+      setSessionId(confirmedSessionId)
 
-    localStorage.setItem('documentChatSessionId', newSessionId)
-    setSessionId(newSessionId)
-
-    setDocument(validatedDoc)
-    setMessages([])
-    showToast(`"${validatedDoc.filename}" uploaded successfully! (${validatedDoc.chunks_processed} chunks)`, 'success')
-  } catch (error) {
-    showToast(`Upload validation failed: ${error.message}`)
+      setDocument(validatedDoc)
+      setMessages([])
+      showToast(`"${validatedDoc.filename}" uploaded successfully! (${validatedDoc.chunks_processed} chunks)`, 'success')
+    } catch (error) {
+      showToast(`Upload validation failed: ${error.message}`)
     }
   }
 
@@ -149,8 +130,6 @@ function App() {
       showToast('Please upload a document first')
       return
     }
-
-    // Prevent duplicate messages during loading
     if (isLoading) {
       return
     }
@@ -163,15 +142,14 @@ function App() {
       const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT)
 
       const currentSessionId = localStorage.getItem('documentChatSessionId') || sessionId
-      const stateSessionId = sessionId
-      console.log('[QUESTION] State sessionId:', stateSessionId)
+      console.log('[QUESTION] State sessionId:', sessionId)
       console.log('[QUESTION] localStorage sessionId:', localStorage.getItem('documentChatSessionId'))
       console.log('[QUESTION] Using sessionId:', currentSessionId)
-      
-      if (stateSessionId !== currentSessionId) {
+
+      if (sessionId !== currentSessionId) {
         console.warn('[QUESTION] ⚠️ SESSION MISMATCH! State and localStorage differ!')
       }
-      
+
       const response = await fetch(`${API_URL}/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -235,13 +213,11 @@ function App() {
         </div>
       )}
 
-      {/* Mobile Header - visible only on sm and below */}
       <div className="md:hidden flex items-center justify-center bg-white border-b border-gray-200 px-4 py-2">
         <h1 className="font-bold text-gray-900 text-lg">AskMyPDF</h1>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Desktop Sidebar - visible on md and up */}
         <div className="hidden md:block">
           <Sidebar 
             document={document}

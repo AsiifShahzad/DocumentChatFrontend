@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react'
 import { FiUploadCloud, FiFile, FiFileText } from 'react-icons/fi'
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
-const UPLOAD_TIMEOUT = 120000 // 2 minutes
+const MAX_FILE_SIZE = 50 * 1024 * 1024
+const UPLOAD_TIMEOUT = 120000
 
 function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
   const fileInputRef = useRef(null)
@@ -48,7 +48,7 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('session_id', sessionId)
-      console.log('[UPLOAD-SIDEBAR] Uploading file with session_id:', sessionId, 'file:', file.name)
+      console.log('[UPLOAD-SIDEBAR] Uploading with session_id:', sessionId, 'file:', file.name)
 
       const response = await fetch(`${apiUrl}/upload`, {
         method: 'POST',
@@ -61,28 +61,14 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
       setUploadProgress(100)
 
       if (!response.ok) {
-        let errorMessage = 'Upload failed'
         let errorDetail = ''
-        
         try {
           const errorJson = await response.json()
-          if (errorJson.detail) {
-            errorDetail = errorJson.detail
-          } else if (errorJson.error) {
-            errorDetail = errorJson.error
-          } else {
-            errorDetail = JSON.stringify(errorJson)
-          }
+          errorDetail = errorJson.detail || errorJson.error || JSON.stringify(errorJson)
         } catch (e) {
-          try {
-            errorDetail = await response.text()
-          } catch (e2) {
-            errorDetail = response.statusText
-          }
+          try { errorDetail = await response.text() } catch (e2) { errorDetail = response.statusText }
         }
-        
-        errorMessage = `Upload failed (${response.status}): ${errorDetail || 'Unknown error'}`
-        throw new Error(errorMessage)
+        throw new Error(`Upload failed (${response.status}): ${errorDetail || 'Unknown error'}`)
       }
 
       let data
@@ -98,24 +84,13 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
       if (!data.filename || typeof data.filename !== 'string') throw new Error('Server returned invalid filename')
       if (data.chunks_processed === undefined) throw new Error('Server returned invalid chunk data')
 
-      // Save the session_id from response to localStorage if provided
-      if (data.session_id) {
-        try {
-          localStorage.setItem('documentChatSessionId', data.session_id)
-          console.log('[UPLOAD-SIDEBAR] Saved response session_id to localStorage:', data.session_id)
-        } catch (e) {
-          console.error('[UPLOAD-SIDEBAR] Failed to save session_id to localStorage:', e)
-        }
-      } else {
-        console.log('[UPLOAD-SIDEBAR] No session_id in response, using existing:', sessionId)
-      }
       console.log('[UPLOAD-SIDEBAR] Upload successful:', data.filename, 'chunks:', data.chunks_processed)
 
+      // App.jsx owns session_id state — just pass data up
       onUploadSuccess(data)
       setUploadProgress(0)
     } catch (error) {
       let userMessage = 'Upload failed'
-
       if (error.name === 'AbortError') {
         userMessage = `Upload timed out after ${UPLOAD_TIMEOUT / 1000}s. File may be too large.`
       } else if (error instanceof TypeError) {
@@ -125,7 +100,6 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
       } else {
         userMessage = error.message || userMessage
       }
-
       onError(userMessage)
       setUploadProgress(0)
     } finally {

@@ -8,8 +8,8 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
   const fileInputRef = useRef(null)
   const [isUploading, setIsUploading] = useState(false)
 
-  const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
-  const UPLOAD_TIMEOUT = 120000 // 2 minutes
+  const MAX_FILE_SIZE = 50 * 1024 * 1024
+  const UPLOAD_TIMEOUT = 120000
 
   const validateFile = (file) => {
     if (!file) {
@@ -48,7 +48,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
       const formData = new FormData()
       formData.append('file', file)
       formData.append('session_id', sessionId)
-      console.log('[UPLOAD-CHATAREA] Uploading file with session_id:', sessionId, 'file:', file.name)
+      console.log('[UPLOAD-CHATAREA] Uploading with session_id:', sessionId, 'file:', file.name)
 
       const response = await fetch(`${apiUrl}/upload`, {
         method: 'POST',
@@ -60,28 +60,14 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
       clearTimeout(timeoutId)
 
       if (!response.ok) {
-        let errorMessage = 'Upload failed'
         let errorDetail = ''
-        
         try {
           const errorJson = await response.json()
-          if (errorJson.detail) {
-            errorDetail = errorJson.detail
-          } else if (errorJson.error) {
-            errorDetail = errorJson.error
-          } else {
-            errorDetail = JSON.stringify(errorJson)
-          }
+          errorDetail = errorJson.detail || errorJson.error || JSON.stringify(errorJson)
         } catch (e) {
-          try {
-            errorDetail = await response.text()
-          } catch (e2) {
-            errorDetail = response.statusText
-          }
+          try { errorDetail = await response.text() } catch (e2) { errorDetail = response.statusText }
         }
-        
-        errorMessage = `Upload failed (${response.status}): ${errorDetail || 'Unknown error'}`
-        throw new Error(errorMessage)
+        throw new Error(`Upload failed (${response.status}): ${errorDetail || 'Unknown error'}`)
       }
 
       let data
@@ -92,28 +78,17 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
       }
 
       console.log('[UPLOAD-CHATAREA] Response received:', JSON.stringify(data))
-      
+
       if (!data || typeof data !== 'object') throw new Error('Invalid server response format')
       if (!data.filename || typeof data.filename !== 'string') throw new Error('Server returned invalid filename')
       if (data.chunks_processed === undefined) throw new Error('Server returned invalid chunk data')
 
-      // Save the session_id from response to localStorage if provided
-      if (data.session_id) {
-        try {
-          localStorage.setItem('documentChatSessionId', data.session_id)
-          console.log('[UPLOAD-CHATAREA] Saved response session_id to localStorage:', data.session_id)
-        } catch (e) {
-          console.error('[UPLOAD-CHATAREA] Failed to save session_id to localStorage:', e)
-        }
-      } else {
-        console.log('[UPLOAD-CHATAREA] No session_id in response, using existing:', sessionId)
-      }
       console.log('[UPLOAD-CHATAREA] Upload successful:', data.filename, 'chunks:', data.chunks_processed)
 
+      // App.jsx owns session_id state — just pass data up
       onUploadClick(data)
     } catch (error) {
       let userMessage = 'Upload failed'
-
       if (error.name === 'AbortError') {
         userMessage = `Upload timed out after ${UPLOAD_TIMEOUT / 1000}s. File may be too large.`
       } else if (error instanceof TypeError) {
@@ -123,7 +98,6 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
       } else {
         userMessage = error.message || userMessage
       }
-
       onError(userMessage)
     } finally {
       setIsUploading(false)
@@ -140,17 +114,8 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
   }, [messages, isLoading])
 
   const handleSend = () => {
-    if (!input.trim()) {
-      return
-    }
-    if (isLoading) {
-      return
-    }
-    if (!hasDocument) {
-      return
-    }
+    if (!input.trim() || isLoading || !hasDocument) return
 
-    // Sanitize input - basic XSS prevention
     const sanitizedInput = input.trim()
     if (sanitizedInput.length > 5000) {
       onError('Question is too long (max 5000 characters)')
@@ -170,7 +135,6 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
 
   return (
     <main className="flex-1 flex flex-col bg-white w-full overflow-hidden">
-      {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6 space-y-2 sm:space-y-4 md:space-y-6">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center px-2 sm:px-4">
@@ -208,7 +172,6 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
                       <p className="text-xs sm:text-sm font-bold text-gray-700 mb-1 sm:mb-2">Sources</p>
                       <div className="flex flex-wrap gap-1 sm:gap-2">
                         {msg.sources.map((source, i) => {
-                          // Validate source structure
                           if (!source || typeof source !== 'object') return null
                           const sourceName = source.source || source.name || `Source ${i + 1}`
                           const page = source.page !== undefined ? source.page : '?'
@@ -252,11 +215,9 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
         )}
       </div>
 
-      {/* Input Area */}
       <div className="border-t border-gray-200 bg-white p-2 sm:p-4">
         <div className="flex flex-col gap-1 items-center justify-center">
           <div className="w-full max-w-sm sm:max-w-md md:max-w-2xl relative flex items-center gap-1.5 sm:gap-2">
-            {/* Upload button - visible on mobile */}
             <button
               onClick={handleUploadButtonClick}
               disabled={isUploading}
@@ -278,11 +239,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               disabled={!hasDocument || isLoading}
-              placeholder={
-                hasDocument
-                  ? 'Ask your question...'
-                  : 'Upload PDF first...'
-              }
+              placeholder={hasDocument ? 'Ask your question...' : 'Upload PDF first...'}
               maxLength={5000}
               className="flex-1 px-2.5 sm:px-4 py-1.5 sm:py-3 pr-9 sm:pr-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 text-xs sm:text-sm"
             />
@@ -307,7 +264,6 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
           </div>
         </div>
 
-        {/* Hidden file input */}
         <input
           ref={fileInputRef}
           type="file"
