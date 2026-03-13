@@ -25,6 +25,35 @@ function App() {
   const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [toast, setToast] = useState(null)
+  const [sessionId, setSessionId] = useState(null)
+
+  // Generate session ID on app load and setup cleanup
+  useEffect(() => {
+    // Generate session ID - only once per session
+    let currentSessionId = sessionStorage.getItem('documentChatSessionId')
+    if (!currentSessionId) {
+      currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+      sessionStorage.setItem('documentChatSessionId', currentSessionId)
+    }
+    setSessionId(currentSessionId)
+    console.log('[App] Session ID:', currentSessionId)
+
+    // Setup auto-cleanup on page unload
+    const handleBeforeUnload = async () => {
+      const sid = sessionStorage.getItem('documentChatSessionId')
+      if (sid) {
+        console.log('[App] Cleaning up session:', sid)
+        // Use sendBeacon for reliable delivery even on page unload
+        navigator.sendBeacon(`${API_URL}/cleanup-session/${sid}`)
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [])
 
   const showToast = (message, type = 'error', duration = 3000) => {
     setToast({ message, type })
@@ -126,6 +155,7 @@ function App() {
             onUploadSuccess={handleUploadSuccess}
             apiUrl={API_URL}
             onError={showToast}
+            sessionId={sessionId}
           />
         </div>
 

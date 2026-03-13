@@ -4,7 +4,7 @@ import { FiUploadCloud, FiFile, FiFileText } from 'react-icons/fi'
 const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
 const UPLOAD_TIMEOUT = 120000 // 2 minutes
 
-function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
+function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
   const fileInputRef = useRef(null)
   const [isUploading, setIsUploading] = useState(false)
   const [isDragActive, setIsDragActive] = useState(false)
@@ -33,6 +33,10 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
 
   const handleFileSelect = async (file) => {
     if (!validateFile(file)) return
+    if (!sessionId) {
+      onError('Session not initialized. Please refresh the page.')
+      return
+    }
 
     setIsUploading(true)
     setUploadProgress(0)
@@ -43,6 +47,7 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError }) {
 
       const formData = new FormData()
       formData.append('file', file)
+      formData.append('session_id', sessionId)
 
       const response = await fetch(`${apiUrl}/upload`, {
         method: 'POST',
