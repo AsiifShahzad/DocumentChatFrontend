@@ -167,6 +167,7 @@ function App() {
           onUploadClick={handleUploadSuccess}
           apiUrl={API_URL}
           onError={showToast}
+          sessionId={sessionId}
         />
       </div>
     </div>

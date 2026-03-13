@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { FiSend, FiUploadCloud, FiBriefcase, FiPlus } from 'react-icons/fi'
 
-function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadClick, apiUrl, onError }) {
+function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadClick, apiUrl, onError, sessionId }) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
@@ -34,6 +34,10 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
 
   const handleFileSelect = async (file) => {
     if (!validateFile(file)) return
+    if (!sessionId) {
+      onError('Session not initialized. Please refresh the page.')
+      return
+    }
 
     setIsUploading(true)
 
@@ -43,6 +47,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
 
       const formData = new FormData()
       formData.append('file', file)
+      formData.append('session_id', sessionId)
 
       const response = await fetch(`${apiUrl}/upload`, {
         method: 'POST',
