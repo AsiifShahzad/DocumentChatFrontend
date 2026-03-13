@@ -107,6 +107,9 @@ function App() {
       const oldSessionId = sessionId
       const currentStoredSessionId = localStorage.getItem('documentChatSessionId')
       
+      console.log('[UPLOAD-SUCCESS] State sessionId:', oldSessionId)
+      console.log('[UPLOAD-SUCCESS] localStorage sessionId:', currentStoredSessionId)
+      
       if (currentStoredSessionId && oldSessionId && currentStoredSessionId !== oldSessionId) {
         console.log('[UPLOAD-CLEANUP] Session changed. Old:', oldSessionId, 'New:', currentStoredSessionId)
         console.log('[UPLOAD-CLEANUP] Explicitly cleaning old session:', oldSessionId)
@@ -119,6 +122,8 @@ function App() {
         } catch (e) {
           console.error('[UPLOAD-CLEANUP] Failed to cleanup old session:', e)
         }
+      } else if (currentStoredSessionId === oldSessionId) {
+        console.log('[UPLOAD-SUCCESS] Using same session_id for new file')
       }
       
       setDocument(validatedDoc)
@@ -151,10 +156,23 @@ function App() {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT)
 
+      const currentSessionId = localStorage.getItem('documentChatSessionId') || sessionId
+      const stateSessionId = sessionId
+      console.log('[QUESTION] State sessionId:', stateSessionId)
+      console.log('[QUESTION] localStorage sessionId:', localStorage.getItem('documentChatSessionId'))
+      console.log('[QUESTION] Using sessionId:', currentSessionId)
+      
+      if (stateSessionId !== currentSessionId) {
+        console.warn('[QUESTION] ⚠️ SESSION MISMATCH! State and localStorage differ!')
+      }
+      
       const response = await fetch(`${API_URL}/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ 
+          question,
+          session_id: currentSessionId 
+        }),
         signal: controller.signal,
         credentials: 'include',
       })

@@ -92,6 +92,8 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
         throw new Error('Server returned invalid response format')
       }
 
+      console.log('[UPLOAD-SIDEBAR] Response received:', JSON.stringify(data))
+
       if (!data || typeof data !== 'object') throw new Error('Invalid server response format')
       if (!data.filename || typeof data.filename !== 'string') throw new Error('Server returned invalid filename')
       if (data.chunks_processed === undefined) throw new Error('Server returned invalid chunk data')
