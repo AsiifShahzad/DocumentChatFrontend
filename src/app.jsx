@@ -43,10 +43,18 @@ function App() {
           currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
         }
         sessionStorage.setItem('documentChatSessionId', currentSessionId)
+        // Log for debugging
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          console.log('[App] Session ID created:', currentSessionId)
+        }
       } catch (e) {
         // Handle private browsing mode where sessionStorage might be unavailable
-        console.warn('[App] sessionStorage unavailable, using in-memory session')
         currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+      }
+    } else {
+      // Log existing session ID
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.log('[App] Using existing session ID:', currentSessionId)
       }
     }
     setSessionId(currentSessionId)

@@ -49,6 +49,12 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadCli
       formData.append('file', file)
       formData.append('session_id', sessionId)
 
+      // Debug: log what we're sending
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.log('[ChatArea] Uploading with session_id:', sessionId)
+        console.log('[ChatArea] File:', file.name, 'Size:', file.size)
+      }
+
       const response = await fetch(`${apiUrl}/upload`, {
         method: 'POST',
         body: formData,

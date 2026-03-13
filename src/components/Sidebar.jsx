@@ -49,6 +49,12 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
       formData.append('file', file)
       formData.append('session_id', sessionId)
 
+      // Debug: log what we're sending
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.log('[Sidebar] Uploading with session_id:', sessionId)
+        console.log('[Sidebar] File:', file.name, 'Size:', file.size)
+      }
+
       const response = await fetch(`${apiUrl}/upload`, {
         method: 'POST',
         body: formData,
