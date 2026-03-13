@@ -31,6 +31,8 @@ function App() {
   useEffect(() => {
     // Try to get existing session ID from localStorage
     let currentSessionId = localStorage.getItem('documentChatSessionId')
+    console.log('[SESSION] Retrieved from localStorage:', currentSessionId)
+    
     if (!currentSessionId) {
       try {
         // Try to use crypto API if available (more secure)
@@ -43,10 +45,14 @@ function App() {
           currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
         }
         localStorage.setItem('documentChatSessionId', currentSessionId)
+        console.log('[SESSION] Generated new session:', currentSessionId)
       } catch (e) {
         // Handle private browsing mode where localStorage might be unavailable
         currentSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+        console.log('[SESSION] localStorage unavailable, using session:', currentSessionId)
       }
+    } else {
+      console.log('[SESSION] Using existing session from localStorage:', currentSessionId)
     }
     setSessionId(currentSessionId)
 
@@ -54,23 +60,35 @@ function App() {
     const handleBeforeUnload = () => {
       try {
         const sid = localStorage.getItem('documentChatSessionId')
+        console.log('[CLEANUP] Before unload - cleaning session:', sid)
         if (sid) {
           // Use navigator.sendBeacon with URLSearchParams for reliable delivery
-          navigator.sendBeacon(
+          const result = navigator.sendBeacon(
             `${API_URL}/cleanup-session`,
             new URLSearchParams({ session_id: sid })
           )
+          console.log('[CLEANUP] sendBeacon result:', result)
           localStorage.removeItem('documentChatSessionId')
+          console.log('[CLEANUP] Removed session from localStorage')
         }
       } catch (e) {
-        // Silently fail - cleanup is best-effort
+        console.error('[CLEANUP] Error during cleanup:', e)
       }
     }
 
+    const handlePageHide = () => {
+      console.log('[CLEANUP] Page hide event fired (mobile-friendly)')
+      handleBeforeUnload()
+    }
+
     window.addEventListener('beforeunload', handleBeforeUnload)
+    window.addEventListener('pagehide', handlePageHide)
+    console.log('[SESSION] beforeunload and pagehide listeners attached')
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
+      window.removeEventListener('pagehide', handlePageHide)
+      console.log('[SESSION] cleanup listeners removed')
     }
   }, [])
 
@@ -84,6 +102,25 @@ function App() {
   const handleUploadSuccess = (doc) => {
     try {
       const validatedDoc = validateUploadResponse(doc)
+      
+      // Check if we have a different session now (important for mobile)
+      const oldSessionId = sessionId
+      const currentStoredSessionId = localStorage.getItem('documentChatSessionId')
+      
+      if (currentStoredSessionId && oldSessionId && currentStoredSessionId !== oldSessionId) {
+        console.log('[UPLOAD-CLEANUP] Session changed. Old:', oldSessionId, 'New:', currentStoredSessionId)
+        console.log('[UPLOAD-CLEANUP] Explicitly cleaning old session:', oldSessionId)
+        // Clean the old session explicitly
+        try {
+          navigator.sendBeacon(
+            `${API_URL}/cleanup-session`,
+            new URLSearchParams({ session_id: oldSessionId })
+          )
+        } catch (e) {
+          console.error('[UPLOAD-CLEANUP] Failed to cleanup old session:', e)
+        }
+      }
+      
       setDocument(validatedDoc)
       setMessages([])
       showToast(`"${validatedDoc.filename}" uploaded successfully! (${validatedDoc.chunks_processed} chunks)`, 'success')

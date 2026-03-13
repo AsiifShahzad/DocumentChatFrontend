@@ -48,6 +48,7 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('session_id', sessionId)
+      console.log('[UPLOAD-SIDEBAR] Uploading file with session_id:', sessionId, 'file:', file.name)
 
       const response = await fetch(`${apiUrl}/upload`, {
         method: 'POST',
@@ -99,10 +100,14 @@ function Sidebar({ document, onUploadSuccess, apiUrl, onError, sessionId }) {
       if (data.session_id) {
         try {
           localStorage.setItem('documentChatSessionId', data.session_id)
+          console.log('[UPLOAD-SIDEBAR] Saved response session_id to localStorage:', data.session_id)
         } catch (e) {
-          // Silently fail if localStorage unavailable
+          console.error('[UPLOAD-SIDEBAR] Failed to save session_id to localStorage:', e)
         }
+      } else {
+        console.log('[UPLOAD-SIDEBAR] No session_id in response, using existing:', sessionId)
       }
+      console.log('[UPLOAD-SIDEBAR] Upload successful:', data.filename, 'chunks:', data.chunks_processed)
 
       onUploadSuccess(data)
       setUploadProgress(0)
