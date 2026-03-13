@@ -1,10 +1,99 @@
 import { useRef, useEffect, useState } from 'react'
-import { FiSend, FiUploadCloud, FiBriefcase } from 'react-icons/fi'
+import { FiSend, FiUploadCloud, FiBriefcase, FiPlus } from 'react-icons/fi'
 
-function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
+function ChatArea({ messages, isLoading, onSendMessage, hasDocument, onUploadClick, apiUrl, onError }) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  const fileInputRef = useRef(null)
+  const [isUploading, setIsUploading] = useState(false)
+
+  const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+  const UPLOAD_TIMEOUT = 120000 // 2 minutes
+
+  const validateFile = (file) => {
+    if (!file) {
+      onError('No file selected')
+      return false
+    }
+    if (!file.name.endsWith('.pdf')) {
+      onError('Invalid file type. Only PDF files are supported.')
+      return false
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      const sizeMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)
+      onError(`File is too large. Maximum size is ${sizeMB}MB. Your file is ${(file.size / (1024 * 1024)).toFixed(1)}MB.`)
+      return false
+    }
+    if (file.size === 0) {
+      onError('File is empty')
+      return false
+    }
+    return true
+  }
+
+  const handleFileSelect = async (file) => {
+    if (!validateFile(file)) return
+
+    setIsUploading(true)
+
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT)
+
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch(`${apiUrl}/upload`, {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+        credentials: 'include',
+      })
+
+      clearTimeout(timeoutId)
+
+      if (!response.ok) {
+        let errorMessage = 'Upload failed'
+        try {
+          const errorData = await response.text()
+          errorMessage = errorData || `Server error (${response.status})`
+        } catch (e) {
+          errorMessage = `Server error (${response.status}): ${response.statusText}`
+        }
+        throw new Error(errorMessage)
+      }
+
+      const data = await response.json()
+
+      if (!data || typeof data !== 'object') throw new Error('Invalid server response format')
+      if (!data.filename || typeof data.filename !== 'string') throw new Error('Server returned invalid filename')
+      if (data.chunks_processed === undefined) throw new Error('Server returned invalid chunk data')
+
+      onUploadClick(data)
+    } catch (error) {
+      let userMessage = 'Upload failed'
+
+      if (error.name === 'AbortError') {
+        userMessage = `Upload timed out after ${UPLOAD_TIMEOUT / 1000}s. File may be too large.`
+      } else if (error instanceof TypeError) {
+        userMessage = 'Network error. Check your connection and backend URL.'
+      } else if (error.message.includes('Failed to fetch')) {
+        userMessage = 'Cannot reach backend server. Check if it\'s running.'
+      } else {
+        userMessage = error.message || userMessage
+      }
+
+      onError(userMessage)
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleUploadButtonClick = () => {
+    fileInputRef.current?.click()
+  }
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -126,7 +215,22 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
       {/* Input Area */}
       <div className="border-t border-gray-200 bg-white p-3 sm:p-4">
         <div className="flex flex-col gap-2 items-center justify-center">
-          <div className="w-full max-w-sm sm:max-w-md md:max-w-2xl relative flex items-center">
+          <div className="w-full max-w-sm sm:max-w-md md:max-w-2xl relative flex items-center gap-2">
+            {/* Upload button - visible on mobile */}
+            <button
+              onClick={handleUploadButtonClick}
+              disabled={isUploading}
+              className="md:hidden bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center justify-center h-10 w-10 flex-shrink-0"
+              title="Upload PDF"
+              aria-label="Upload PDF"
+            >
+              {isUploading ? (
+                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <FiPlus className="text-lg" />
+              )}
+            </button>
+
             <input
               ref={inputRef}
               type="text"
@@ -140,7 +244,7 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
                   : 'Upload PDF first...'
               }
               maxLength={5000}
-              className="w-full px-3 sm:px-4 py-2 sm:py-3 pr-10 sm:pr-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 text-xs sm:text-sm"
+              className="flex-1 px-3 sm:px-4 py-2 sm:py-3 pr-10 sm:pr-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500 text-xs sm:text-sm"
             />
             <button
               onClick={handleSend}
@@ -162,6 +266,15 @@ function ChatArea({ messages, isLoading, onSendMessage, hasDocument }) {
             <span>to send</span>
           </div>
         </div>
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf"
+          onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+          style={{ display: 'none' }}
+        />
       </div>
     </main>
   )
