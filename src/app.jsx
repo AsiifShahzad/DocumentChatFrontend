@@ -3,7 +3,7 @@ import HealthBar from './components/HealthBar'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://asiifbaloch-documentchat.hf.space'
+const API_URL = import.meta.env.VITE_API_URL || 'https://rag-document-search-mmpi.onrender.com'
 const REQUEST_TIMEOUT = 60000 
 
 const validateUploadResponse = (data) => {
